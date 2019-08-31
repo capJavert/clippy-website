@@ -1,61 +1,26 @@
 import './assets/scss/main.scss'
-import './assets/js/plugins.js'
-import {BrowserEnum, whichBrowser} from './assets/js/helpers/which-browser.js'
+import './assets/js/plugins'
+import { BrowserEnum, whichBrowser } from './assets/js/helpers/which-browser'
 
-var browser = (function () {
-    return window.msBrowser ||
-    window.browser ||
-    window.safari ||
-    window.chrome
-})()
+/* eslint-disable no-var */
+var browser = (function createBrowser() {
+    return window.msBrowser
+        || window.browser
+        || window.safari
+        || window.chrome
+}())
+/* eslint-enable no-var */
 const browserPlatform = whichBrowser()
 const extensionIds = {
     [BrowserEnum.chrome]: 'oaknkllfdceggjpbonhiegoaifjdkfjd',
     [BrowserEnum.opera]: 'mmpbggcbnfmpipfcfgpogialhdmpofgg',
     [BrowserEnum.firefox]: 'tby4cia5oufpcc3hqtasqxdh7ine3a2a'
 }
-var extensionId = extensionIds[browserPlatform]
-var actionSwitchInput = document.querySelector('.Toolbar-actionSwitch input')
-var animationInterval = null
-var refreshInterval = null
-
-window.addEventListener('load', function() {
-    if ([BrowserEnum.chrome, BrowserEnum.firefox, BrowserEnum.opera].indexOf(browserPlatform) > -1) {
-        document.querySelectorAll('.Button-download').forEach(element => {
-            element.style.display = 'none'
-        })
-
-        switch(browserPlatform) {
-            case BrowserEnum.chrome:
-            document.querySelector('.Button-download-chrome').style.display = 'inline-block'
-            break
-            case BrowserEnum.firefox:
-            document.querySelector('.Button-download-firefox').style.display = 'inline-block'
-            break
-            case BrowserEnum.opera:
-            document.querySelector('.Button-download-opera').style.display = 'inline-block'
-            break
-        }
-
-        refreshInterval = setInterval(function() {
-            checkClippyStatus()
-        }, 1000)
-    }
-
-    animatePosterLogo()
-    adjustClippyLogo()
-    stickyNavigation()
-    clippySwitchButton()
-})
-
-window.addEventListener('unload', function() {
-    if (refreshInterval != null) {
-        clearInterval(refreshInterval)
-    }
-    if (animationInterval != null) {
-        clearInterval(animationInterval)
-    }
-})
+const extensionId = extensionIds[browserPlatform]
+const actionSwitchInput = document.querySelector('.Toolbar-actionSwitch input')
+const supportedBrowser = [BrowserEnum.chrome, BrowserEnum.firefox, BrowserEnum.opera]
+let animationInterval = null
+let refreshInterval = null
 
 function animatePosterLogo() {
     const svgDocument = document.querySelector('.PosterImage-object').contentDocument
@@ -67,19 +32,21 @@ function animatePosterLogo() {
         3: svgDocument.querySelector('.Gradient1-3')
     }
 
-    animationInterval = setInterval(function() {
+    animationInterval = setInterval(() => {
+        /* eslint-disable max-len */
         const color = {
             1: [Math.floor(Math.random() * 30) + 48, Math.floor(Math.random() * 30) + 158, Math.floor(Math.random() * 10) + 242],
             2: [Math.floor(Math.random() * 30) + 47, Math.floor(Math.random() * 10) + 239, Math.floor(Math.random() * 20) + 117],
-            3: [Math.floor(Math.random() * 30) + 35, Math.floor(Math.random() * 30)+ 92, Math.floor(Math.random() * 10)+ 237]
+            3: [Math.floor(Math.random() * 30) + 35, Math.floor(Math.random() * 30) + 92, Math.floor(Math.random() * 10) + 237]
         }
+        /* eslint-enable max-len */
 
-        TweenLite.to(foregroundCircle, .8, {rotation: Math.floor(Math.random() * 50) + 60, transformOrigin: '50% 50%'})
-        TweenLite.to(backgroundCircle, .8, {rotation: Math.floor(Math.random() * 360), transformOrigin: '50% 50%'})
+        TweenLite.to(foregroundCircle, 0.8, { rotation: Math.floor(Math.random() * 50) + 60, transformOrigin: '50% 50%' })
+        TweenLite.to(backgroundCircle, 0.8, { rotation: Math.floor(Math.random() * 360), transformOrigin: '50% 50%' })
 
-        TweenLite.to(gradient1[1], .4, {stopColor: 'rgb(' + color[1].toString() + ')'})
-        TweenLite.to(gradient1[2], .4, {stopColor: 'rgb(' + color[2].toString() + ')'})
-        TweenLite.to(gradient1[3], .4, {stopColor: 'rgb(' + color[3].toString() + ')'})
+        TweenLite.to(gradient1[1], 0.4, { stopColor: `rgb(${color[1].toString()})` })
+        TweenLite.to(gradient1[2], 0.4, { stopColor: `rgb(${color[2].toString()})` })
+        TweenLite.to(gradient1[3], 0.4, { stopColor: `rgb(${color[3].toString()})` })
     }, 600)
 }
 
@@ -93,6 +60,22 @@ function adjustClippyLogo() {
     backgroundCircle.setAttribute('r', 20)
 }
 
+function toggleStickyNavigation(activationPoint, element) {
+    const { documentElement } = document
+    const documentOffsetTop = (window.pageYOffset || documentElement.scrollTop)
+        - (documentElement.clientTop || 0)
+
+    if (documentOffsetTop >= activationPoint && documentOffsetTop !== 0) {
+        element.classList.add('Toolbar-fixed')
+        element.classList.add('Toolbar-opaque')
+        document.body.className = 'Fixed Fixed-toolbar'
+    } else {
+        element.classList.remove('Toolbar-fixed')
+        element.classList.remove('Toolbar-opaque')
+        document.body.className = null
+    }
+}
+
 function stickyNavigation() {
     const headerDownloadElem = document.querySelector('.Toolbar-download')
     const headerMainElem = document.querySelector('.Header-main')
@@ -104,18 +87,11 @@ function stickyNavigation() {
     }
 }
 
-function toggleStickyNavigation(activationPoint, element) {
-    const documentElement = document.documentElement
-    const documentOffsetTop = (window.pageYOffset || documentElement.scrollTop)  - (documentElement.clientTop || 0)
+function removeClippy() {
+    const clippy = document.querySelector('.clippy')
 
-    if(documentOffsetTop >= activationPoint && documentOffsetTop != 0) {
-        element.classList.add('Toolbar-fixed')
-        element.classList.add('Toolbar-opaque')
-        document.body.className = 'Fixed Fixed-toolbar'
-    } else {
-        element.classList.remove('Toolbar-fixed')
-        element.classList.remove('Toolbar-opaque')
-        document.body.className = null
+    if (clippy != null) {
+        document.body.removeChild(clippy)
     }
 }
 
@@ -145,11 +121,12 @@ function checkClippyStatus() {
     }
 
     if (!browser) {
-        window.postMessage({name: 'WHAT_IS_THE_MEANING_OF_LIFE'})
+        window.postMessage({ name: 'WHAT_IS_THE_MEANING_OF_LIFE' })
     } else {
-        browser.runtime.sendMessage(extensionId,
-            {name: 'WHAT_IS_THE_MEANING_OF_LIFE'},
-            function(response) {
+        browser.runtime.sendMessage(
+            extensionId,
+            { name: 'WHAT_IS_THE_MEANING_OF_LIFE' },
+            (response) => {
                 if (!response) {
                     handleNoInstall()
 
@@ -167,13 +144,14 @@ function clippySwitchButton() {
         return
     }
 
-    actionSwitchInput.addEventListener('click', function(e) {
+    actionSwitchInput.addEventListener('click', () => {
         if (!browser) {
-            window.postMessage({name: 'RISE'})
+            window.postMessage({ name: 'RISE' })
         } else {
-            browser.runtime.sendMessage(extensionId,
-                {name: 'RISE'},
-                function(response) {
+            browser.runtime.sendMessage(
+                extensionId,
+                { name: 'RISE' },
+                (response) => {
                     if (!response) {
                         return
                     }
@@ -185,20 +163,52 @@ function clippySwitchButton() {
     })
 }
 
-function removeClippy() {
-    var clippy = document.querySelector('.clippy')
+window.addEventListener('load', () => {
+    if (supportedBrowser.indexOf(browserPlatform) > -1) {
+        document.querySelectorAll('.Button-download').forEach((element) => {
+            element.style.display = 'none'
+        })
 
-    if (clippy != null) {
-        document.body.removeChild(clippy)
+        switch (browserPlatform) {
+        case BrowserEnum.chrome:
+            document.querySelector('.Button-download-chrome').style.display = 'inline-block'
+            break
+        case BrowserEnum.firefox:
+            document.querySelector('.Button-download-firefox').style.display = 'inline-block'
+            break
+        case BrowserEnum.opera:
+            document.querySelector('.Button-download-opera').style.display = 'inline-block'
+            break
+        default:
+            break
+        }
+
+        refreshInterval = setInterval(() => {
+            checkClippyStatus()
+        }, 1000)
     }
-}
+
+    animatePosterLogo()
+    adjustClippyLogo()
+    stickyNavigation()
+    clippySwitchButton()
+})
+
+window.addEventListener('unload', () => {
+    if (refreshInterval != null) {
+        clearInterval(refreshInterval)
+    }
+    if (animationInterval != null) {
+        clearInterval(animationInterval)
+    }
+})
 
 if (!browser) {
-    window.addEventListener('message', function(e) {
+    window.addEventListener('message', (e) => {
         const response = e.data
 
         if (response) {
-            switch(response.name) {
+            switch (response.name) {
             case 'SILENCE_MY_BROTHER':
                 handleInstallResponse(response)
                 break
