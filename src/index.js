@@ -106,11 +106,6 @@ function handleNoInstall() {
 function handleInstallResponse(response) {
     document.querySelector('.Section-clippyActive').classList.remove('Section-hidden')
     document.querySelector('.Section-download').classList.add('Section-hidden')
-    document.querySelector('.Toolbar-actionDownload').classList.add('hidden')
-
-    if (!response.value.isActive) {
-        document.querySelector('.Toolbar-actionSwitch').classList.remove('hidden')
-    }
 
     actionSwitchInput.checked = response.value.isActive
 }
